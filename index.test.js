@@ -1,9 +1,7 @@
-
 const {sequelize} = require('./db')
 const {User, Board, Cheese} = require('./index')
 
 describe('User, Board, Cheese', () => {
-
     beforeAll(async () => {
         await sequelize.sync({force: true});
     })
@@ -35,6 +33,72 @@ describe('User, Board, Cheese', () => {
         });
         expect(newCheese.title).toBe('gouda cheese');
         expect(newCheese.description).toBe('cheese imported from the netherlands, rich flavour cheese no processing. expires tomorrow!');
-        })
+    })
 
+    test('can associate multiple Boards with a User', async () => {
+        const newUser = await User.create({
+            name: "linda tomas",
+            email: "lindatomas1@gmail.com"
+        });
+
+        const board1 = await Board.create({
+            type: "plastic",
+            description: "A cheap and lightweight cheese board.",
+            rating: 3
+        });
+
+        const board2 = await Board.create({
+            type: "marble",
+            description: "A high-quality, durable cheese board.",
+            rating: 5
+        });
+
+        await newUser.addBoard(board1);
+        await newUser.addBoard(board2);
+
+        const boards = await newUser.getBoards();
+        expect(boards).toHaveLength(2);
+    });
+
+    test('can associate a Board with multiple Cheeses', async () => {
+        const board = await Board.create({
+            type: "marble",
+            description: "A high-quality, durable cheese board.",
+            rating: 5
+        });
+
+        const cheese1 = await Cheese.create({
+            title: "gouda cheese",
+            description: "cheese imported from the netherlands, rich flavour cheese no processing. expires tomorrow!"
+        });
+
+        const cheese2 = await Cheese.create({
+            title: "cheddar cheese",
+            description: "classic cheese with a sharp, tangy flavor."
+        });
+
+        await board.addCheese(cheese1);
+        await board.addCheese(cheese2);
+
+        const cheeses = await board.getCheeses();
+        expect(cheeses).toHaveLength(2);
+    });
+
+    test('can load a board with its cheeses', async () => {
+        const board = await Board.create({
+            type: "marble",
+            description: "A high-quality, durable cheese board.",
+            rating: 5
+        });
+
+        const cheese1 = await Cheese.create({
+            title: "gouda cheese",
+            description: "cheese imported from the netherlands, rich flavour cheese no processing. expires tomorrow!"
+        });
+
+        const cheese2 = await Cheese.create({
+            title: "cheddar cheese",
+            description: "classic cheese with a sharp, tangy flavor."
+        });
+    })
 })
